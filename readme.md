@@ -1,1 +1,39 @@
-File Sharing API
+File Sharing API Requirements
+1. Upload
+    Endpoint: POST /files/upload
+    Features:
+    Accepts single/multiple files.
+    Supports large file uploads with chunked/multipart requests.
+    Validate file size and type (configurable limits).
+    Store file metadata (name, size, type, hash, owner, timestamp).
+    Return a unique file_id for each uploaded file.
+2. Download
+    Endpoint: GET /files/{file_id}/download
+    Features:
+    Secure download with authentication & authorization checks.
+    Support range requests (resume downloads).
+    Optional: allow download by filename.
+    Return correct Content-Type and headers.
+3. File Sharing through Mail
+    Endpoint: POST /files/{file_id}/share/mail
+    Features:
+    Input: list of email addresses, permission type (view/edit).
+    Generate secure access tokens/links embedded in mail.
+    Email service integration (SMTP or external API like SendGrid).
+    Optional expiration date for shared access.
+    Notify sender when file is successfully shared.
+4. File Sharing through Link
+    Endpoint: POST /files/{file_id}/share/link
+    Features:
+    Generate a shareable link with optional parameters:
+    Expiry time (e.g., valid for 24h, 7 days).
+    Access type (view-only / download / edit).
+    Password-protected links.
+Endpoint to revoke link: DELETE /share-links/{link_id}.
+    Analytics (optional): track number of downloads/opens.
+    ⚙️ Non-functional requirements (important for API design):
+    Authentication: OAuth2 / JWT.
+    Authorization: Role- and permission-based (owner, editor, viewer).
+    Security: Encrypted storage (at rest & in transit), signed URLs.
+    Scalability: Handle large files and concurrent users.
+    Logging & audit trails for file access/sharing events.
