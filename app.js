@@ -5,7 +5,8 @@ const PORT = parseInt(process.env.PORT,10) || 10000;
 //Imports
 const express = require('express');
 const db_connection = require('./config/db');
-const test_route = require('./routes/testdb');
+const testRoute = require('./routes/testdb');
+const fileRoute = require('./routes/files');
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -13,7 +14,8 @@ BigInt.prototype.toJSON = function () {
 
 //api
 const app = express();
-app.use("/test",test_route);
+app.use("/test", testRoute);
+app.use("/file", fileRoute);
 
 
 //DB Connection Starting
