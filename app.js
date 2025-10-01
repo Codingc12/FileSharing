@@ -1,5 +1,5 @@
 //Environment Variables
-require('dotenv').config({path: require('path').resolve(__dirname,'../')});
+require('dotenv').config({path: require('path').resolve(__dirname,'../file_share_api_config.env')});
 const PORT = parseInt(process.env.PORT,10) || 10000;
 
 //Imports
@@ -7,6 +7,7 @@ const express = require('express');
 const db_connection = require('./config/db');
 const testRoute = require('./routes/testdb');
 const fileRoute = require('./routes/files');
+const userRoute = require('./routes/user');
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -14,8 +15,10 @@ BigInt.prototype.toJSON = function () {
 
 //api
 const app = express();
+app.use(express.json());
 app.use("/test", testRoute);
 app.use("/file", fileRoute);
+app.use("/user",userRoute);
 
 
 //DB Connection Starting
