@@ -8,8 +8,9 @@ const jwt = require("jsonwebtoken")
 async function signUp(request,response){
     try{
         const errors = validationResult(request);
+        const errors = validationResult(request);
         if(!errors.isEmpty()){
-            response.status(403).json({
+            response.status(400).json({
                 errors: errors.array()
             });
             return;
@@ -32,30 +33,22 @@ async function signUp(request,response){
 }
 
 async function login(request,response){
-    try{
-        if(!request.body.user_name){
-            response.status(403).json({
-                "Message": "Username is required",
-                "_id": -1
-            });
-            return;
-        }
-        const user = await User.findOne({"name": request.body.user_name},'password _id');
+        
+        try{
         if(!user){
-            response.status(404).json({
-                "Message": "Invalid Credentials",
-                "_id": -2
+            response.status(401).json({
+                "message": "Invalid credentials"
             });
             return;
         }
-        const isMatch = await bcrypt.compare(request.body.password, user.password);
-        if(!isMatch){
-            response.status(404).json({
-                "Message": "Invalid Credentials",
-                "_id": -3
+        
+        if (!isMatch) {
+            response.status(401).json({
+                "message": "Invalid credentials"
             });
             return;
         }
+        
         // generate JWT and send it in the HTTP response
         const token = jwt.sign(
             { _id: user._id },

@@ -12,6 +12,10 @@ function isAuth(req,res,next){
         return res.status(401).send("Missing or invalid Authorization header");
     }
     const token = authHeader.split(' ')[1];
+    // Ensure the JWT secret is configured before attempting verification
+    if (!process.env.JWT_SECRET) {
+        return res.status(500).send("Server configuration error");
+    }
     jwt.verify(token,
         process.env.JWT_SECRET,
         (error,decoded) => {

@@ -46,7 +46,11 @@ async function fileDownload(request, response){
         const filePath = path.resolve(file.filePath);
         response.download(filePath, file.fileName, (err) => {
             if(err){
-                console.log(`[ERROR] ${err.message}`);
+             catch (e){
+         console.log(`[ERROR] ${e.message}`);
+         if(!response.headersSent){
+             // existing error-response logic
+         }
                 if(!response.headersSent){
                     response.status(500).json({Message:"InternalError"});
                 }
