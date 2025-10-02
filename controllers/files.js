@@ -1,8 +1,6 @@
 const File = require('../models/files');
 const User = require('../models/User');
-const multer = require('multer');
-const upload = require('../upload');
-const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 const path = require('path');
 
 const fileUpload = async (request, response) => {
@@ -33,24 +31,30 @@ const fileUpload = async (request, response) => {
 
     
 };
-async function fileDownload(request, response){
+async function fileDownloadAdmin(request, response){
     try{
-        const fileId = request.params.id;
-        const file = await File.findById(fileId,'filePath fileName')
-        if(!file){
+        const userId = request.user.id;
+        const adminUserId = await User.find({name:"admin"},'_id');
+        if (adminUserId != userId){
+            response.status(401).json({
+                Message: "Unauthorized route"
+            });
+        }
+
+        const fileId =  request.params.fileId;
+        if(!fileId){
             response.status(404).json({
                 "Message": "File not found"
             });
             return;
         }
+        
+        
+        const file = await File.findById(fileId,'filePath fileName');
         const filePath = path.resolve(file.filePath);
         response.download(filePath, file.fileName, (err) => {
             if(err){
-             catch (e){
-         console.log(`[ERROR] ${e.message}`);
-         if(!response.headersSent){
-             // existing error-response logic
-         }
+                console.log(`[ERROR] ${err.message}`);
                 if(!response.headersSent){
                     response.status(500).json({Message:"InternalError"});
                 }
@@ -58,8 +62,53 @@ async function fileDownload(request, response){
         });
         return
     }
+    
     catch (e){
-        console.log(`[ERROR] ${err.message}`);
+        console.log(`[ERROR] ${e.message}`);
+        if(!response.headersSent){
+            response.status(500).json({ message: "Server error", error: e.message });
+        }
+    }
+    
+
+}
+
+async function fileDownload(request, response){
+    try{
+        const fileToken = request.query.token;
+        if(!fileToken){
+            response.status(404).json({
+                "Message": "Unauthorized"
+            });
+            return;
+        }
+
+        const fileId = jwt.decode(fileToken, process.env.JWT_SECRET, (error, decoded) => {
+            if(error){
+                if (error.name === 'TokenExpiredError'){
+                    response.status(401).send("Token expired");
+                    return;
+                }
+                response.status(403).send("Invalid Token");
+                return;
+            }
+        });
+        
+
+        const file = await File.findById(fileId["fileId"],'filePath fileName');
+        const filePath = path.resolve(file.filePath);
+        response.download(filePath, file.fileName, (err) => {
+            if(err){
+                console.log(`[ERROR] ${err.message}`);
+                if(!response.headersSent){
+                    response.status(500).json({Message:"InternalError"});
+                }
+            }
+        });
+    } 
+    
+    catch (e){
+        console.log(`[ERROR] ${e.message}`);
         if(!response.headersSent){
             response.status(500).json({ message: "Server error", error: e.message });
         }
@@ -73,4 +122,4 @@ function validateType(file){
     const accepted_types = ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/pdf'];
     return accepted_types.includes(file.mimetype);
 }
-module.exports = {fileUpload, fileDownload};
+module.exports = {fileUpload, fileDownloadAdmin,fileDownload};

@@ -1,5 +1,5 @@
 const express = require('express');
-const {validationResult} = require('express-validator');
+//const {validationResult} = require('express-validator');
 const User = require('../models/User');
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken")
@@ -7,14 +7,6 @@ const jwt = require("jsonwebtoken")
 
 async function signUp(request,response){
     try{
-        const errors = validationResult(request);
-        const errors = validationResult(request);
-        if(!errors.isEmpty()){
-            response.status(400).json({
-                errors: errors.array()
-            });
-            return;
-        }
         const new_user =  await User.create({
             name: request.body["user_name"],
             email: request.body["user_email"],
@@ -35,13 +27,18 @@ async function signUp(request,response){
 async function login(request,response){
         
         try{
+        const {user_name, password} = request.body;
+        const user = await User.findOne({name: user_name});
         if(!user){
             response.status(401).json({
                 "message": "Invalid credentials"
             });
             return;
         }
-        
+        console.log(request.body.password);
+        console.log(user);
+        const isMatch = await bcrypt.compare(password, user.password);
+        console.log("p");
         if (!isMatch) {
             response.status(401).json({
                 "message": "Invalid credentials"

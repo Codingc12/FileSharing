@@ -8,6 +8,7 @@ const db_connection = require('./config/db');
 const testRoute = require('./routes/testdb');
 const fileRoute = require('./routes/files');
 const userRoute = require('./routes/user');
+const linkRoute = require('./routes/links');
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use("/test", testRoute);
 app.use("/file", fileRoute);
 app.use("/user",userRoute);
+app.use('/links',linkRoute);
 
 
 //DB Connection Starting
