@@ -34,11 +34,12 @@ const fileUpload = async (request, response) => {
 async function fileDownloadAdmin(request, response){
     try{
         const userId = request.user.id;
-        const adminUserId = await User.find({name:"admin"},'_id');
-        if (adminUserId != userId){
+        const adminUserId = await User.findOne({name:"admin"},'_id');
+        if (adminUserId._id.toString() !== userId.toString()){
             response.status(401).json({
                 Message: "Unauthorized route"
             });
+            return;
         }
 
         const fileId =  request.params.fileId;
@@ -49,8 +50,14 @@ async function fileDownloadAdmin(request, response){
             return;
         }
         
-        
         const file = await File.findById(fileId,'filePath fileName');
+        if (!file) {
+            response.status(404).json({
+                "Message": "File not found"
+            });
+            return;
+        }
+        
         const filePath = path.resolve(file.filePath);
         response.download(filePath, file.fileName, (err) => {
             if(err){
@@ -83,7 +90,7 @@ async function fileDownload(request, response){
             return;
         }
 
-        const fileId = jwt.decode(fileToken, process.env.JWT_SECRET, (error, decoded) => {
+        const fileId = jwt.verify(fileToken, process.env.JWT_SECRET, (error, decoded) => {
             if(error){
                 if (error.name === 'TokenExpiredError'){
                     response.status(401).send("Token expired");
@@ -96,6 +103,12 @@ async function fileDownload(request, response){
         
 
         const file = await File.findById(fileId["fileId"],'filePath fileName');
+        if (!file) {
+        response.status(404).json({
+            "Message": "File not found"
+        });
+        return;
+    }
         const filePath = path.resolve(file.filePath);
         response.download(filePath, file.fileName, (err) => {
             if(err){

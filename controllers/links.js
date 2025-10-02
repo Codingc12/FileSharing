@@ -31,14 +31,20 @@ async function createLink(request, response){
         password_protected = false;
     }
 
-    const link = await Links.create(
-        {
-            fileId: file_id,
-            userId: user_id,
-            shareUserId: share_user_id,
-            passwordProtected: password_protected,
-        }
-    );
+    try {
+        const link = await Links.create(
+            {
+                fileId: file_id,
+                userId: user_id,
+                shareUserId: share_user_id,
+                passwordProtected: password_protected,
+            }
+        );
+    } catch (error) {
+        return response.status(500).json({
+            Message: "Failed to create link"
+        });
+    }
     if(send_mail){
         
     }
@@ -64,7 +70,7 @@ async function getFile(request, response){
         return;
     }
 
-    if(link.passwordProtected && !(user_id == link.shareUserId || user_id == link.userId)){
+    if (link.passwordProtected && !(user_id === link.shareUserId || user_id === link.userId)) {
         response.status(401).json({
             Message: "Unauthorized Request"
         });
@@ -72,7 +78,7 @@ async function getFile(request, response){
     }
 
     if (!process.env.JWT_SECRET) {
-        return res.status(500).send("Server configuration error");
+        return response.status(500).send("Server configuration error");
     }
 
     const token = await jwt.sign({
