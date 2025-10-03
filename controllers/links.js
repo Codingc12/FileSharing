@@ -1,5 +1,6 @@
 const Links = require('../models/Links');
 const jwt = require('jsonwebtoken');
+const mailer = require('nodemailer');
 
 async function createLink(request, response){
     const user_id = request.user.id;
@@ -39,23 +40,38 @@ async function createLink(request, response){
                 shareUserId: share_user_id,
                 passwordProtected: password_protected,
             }
-        );
+            );
+            if(send_mail){
+                await sendMail();
+            }
+            response.status(201).json({
+                Link: `http://localhost:1000/links/getFile/${link._id}`
+            });
+    return;
     } catch (error) {
         return response.status(500).json({
-            Message: "Failed to create link"
+            Message: `Failed to create link: ${error}`
         });
     }
-    if(send_mail){
-        
-    }
-    response.status(201).json({
-        Link: `http://localhost:1000/links/getFile/${link._id}`
-    });
-    return;
+    
 }
 
-async function sendMail(link,request){
-    //Logic To Send Mail
+async function sendMail(link,mailId){
+    const transport = mailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.EMAIL_USER, // your email
+            pass: process.env.EMAIL_PASS  // your email password or app password
+    }
+    });
+    const info = await transport.sendMail({
+        from: `FILE SHARE APP${process.env.EMAIL_USER}`,
+        mailId,
+        subject: "Link for file",
+        text: `Greetings:\nLink: ${link}`
+    });
+    return info;
+    
 }
 
 async function getFile(request, response){

@@ -23,6 +23,8 @@ function Links(){
             default: () => new Date(Date.now() + 24 * 60 * 60 * 1000)
         }
     });
+
+    linkSchema.index({ linkExp: 1 }, { expireAfterSeconds: 0 });
     return mongoose.models.Links || mongoose.model("Links",linkSchema);
 }
 

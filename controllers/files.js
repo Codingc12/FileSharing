@@ -89,8 +89,9 @@ async function fileDownload(request, response){
             });
             return;
         }
+        const fileId={};
 
-        const fileId = jwt.verify(fileToken, process.env.JWT_SECRET, (error, decoded) => {
+        await jwt.verify(fileToken, process.env.JWT_SECRET, (error, decoded) => {
             if(error){
                 if (error.name === 'TokenExpiredError'){
                     response.status(401).send("Token expired");
@@ -99,6 +100,7 @@ async function fileDownload(request, response){
                 response.status(403).send("Invalid Token");
                 return;
             }
+            fileId.fileId = decoded["fileId"];
         });
         
 
